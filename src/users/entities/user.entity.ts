@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer'
 import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm'
 
 export enum UserRole {
@@ -15,6 +16,7 @@ export class User {
   @Column({ length: 191 })
   email: string
 
+  @Exclude()
   @Column({ length: 100 })
   hash!: string
 
