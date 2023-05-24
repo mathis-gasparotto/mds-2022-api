@@ -1,26 +1,54 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Injectable } from '@nestjs/common'
+import { CreateUserDto } from './dto/create-user.dto'
+import { UpdateUserDto } from './dto/update-user.dto'
+import { User } from './entities/user.entity'
+import * as bcrypt from 'bcryptjs'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
+import { NotFoundException } from '@nestjs/common'
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(@InjectRepository(User) private data: Repository<User>) {}
+
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const salt = process.env['HASH_SALT'] || 12
+    const hash = await bcrypt.hash(createUserDto.password, salt)
+    return this.data.save({
+      ...createUserDto,
+      hash: hash
+    })
   }
 
-  findAll() {
-    return `This action returns all users`;
+  findAll(): Promise<User[]> {
+    return this.data.find()
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  findOne(id: number): Promise<User> {
+    return this.data.findOneBy({ id })
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  findOneByEmail(email: string): Promise<User> {
+    return this.data.findOneBy({ email })
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    let done
+    if (updateUserDto.password !== undefined) {
+      const salt = process.env['HASH_SALT'] || 12
+      const hash = await bcrypt.hash(updateUserDto.password, salt)
+      done = await this.data.update(id, { ...updateUserDto, hash: hash })
+    } else {
+      done = await this.data.update(id, { ...updateUserDto })
+    }
+    if (done.affected === 1) {
+      return this.findOne(id)
+    }
+    throw new NotFoundException()
+  }
+
+  async remove(id: number): Promise<boolean> {
+    const done = await this.data.delete(id)
+    return done.affected === 1
   }
 }
