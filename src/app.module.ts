@@ -4,6 +4,7 @@ import { AppService } from './app.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { UsersModule } from './users/users.module'
 import { TokenController } from './token/token.controller';
+import { PizzasModule } from './pizzas/pizzas.module';
 
 @Module({
   imports: [
@@ -13,11 +14,12 @@ import { TokenController } from './token/token.controller';
       port: 3306, // default port for postgres
       username: 'root',
       password: '',
-      database: 'first-api',
+      database: 'first_api',
       autoLoadEntities: true,
       synchronize: true
     }),
-    UsersModule
+    UsersModule,
+    PizzasModule
   ],
   controllers: [AppController, TokenController],
   providers: [AppService]
