@@ -7,7 +7,7 @@
       "name": "First API",
       "args": ["${workspaceFolder}/src/main.ts"],
       "runtimeArgs": [
-        "--watch",
+        // "--watch",
         "--nolazy",
         "-r",
         "ts-node/register",
